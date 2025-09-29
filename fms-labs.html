@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCP Foundation - Foundation Medical Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #d4d4d4;
+            font-family: 'Roboto Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 900px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid #2d2d2d;
+            background-color: #121212;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            margin: 1rem;
+        }
+        .logo {
+            max-width: 200px;
+            filter: brightness(0.9);
+            transition: filter 0.3s ease;
+        }
+        .logo:hover {
+            filter: brightness(1.1);
+        }
+        .header {
+            border-bottom: 2px solid #4b4b4b;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .header-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+        .classified {
+            font-size: 0.875rem;
+            color: #ff4d4d;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            color: #b3b3b3;
+            margin-bottom: 2rem;
+        }
+        select, .generate-btn {
+            background-color: #4b5563;
+            color: #ffffff;
+            border: 1px solid #6b7280;
+            padding: 0.75rem 1.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-radius: 4px;
+            margin: 0.5rem;
+        }
+        select:hover, .generate-btn:hover {
+            background-color: #6b7280;
+        }
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            margin: 2rem 0;
+        }
+        .loading-message {
+            font-size: 1.1rem;
+            color: #b3b3b3;
+            min-height: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .report {
+            display: none;
+            text-align: left;
+            margin-top: 2rem;
+        }
+        .report-header {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .param-box {
+            border: 1px solid #2d2d2d;
+            background-color: #1a1a1a;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+        .param-name {
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .param-range {
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+        .value-container {
+            position: relative;
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+        .value {
+            background-color: #333333;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            font-weight: 700;
+        }
+        .flag {
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+        .bar-container {
+            position: relative;
+            height: 1rem;
+            background: linear-gradient(to right, #f59e0b 0%, #10b981 20%, #10b981 80%, #f59e0b 100%);
+            border-radius: 9999px;
+            margin: 0.5rem 0;
+        }
+        .arrow {
+            position: absolute;
+            top: -0.5rem;
+            transform: translateX(-50%);
+            color: #ffffff;
+            font-size: 1.25rem;
+        }
+        .bar-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        .normal .value { color: #10b981; }
+        .abnormal .value { color: #f59e0b; }
+        .critical .value { color: #ef4444; }
+        .normal .flag { display: none; }
+        .abnormal .flag, .critical .flag { color: inherit; }
+        .redacted {
+            background-color: #000;
+            color: #000;
+            display: inline;
+            padding: 0 0.5rem;
+            user-select: none;
+        }
+        .redacted:hover {
+            background-color: #333;
+            color: #b3b3b3;
+            transition: background-color 0.3s ease;
+        }
+        .warning {
+            font-size: 0.9rem;
+            color: #ff4d4d;
+            font-weight: 500;
+            margin-top: 1rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        @media (max-width: 640px) {
+            .container {
+                margin: 0.5rem;
+                padding: 1.5rem;
+            }
+            .logo {
+                max-width: 150px;
+            }
+            .header-text {
+                font-size: 1.25rem;
+            }
+            .title {
+                font-size: 1.5rem;
+            }
+            .param-box {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/SCP_Foundation_Logo_White.png?20241023233235" alt="SCP Foundation Logo" class="logo mx-auto mb-4">
+            <div class="header-text">Foundation Medical Services</div>
+            <div class="classified">CLASSIFIED - LEVEL 2 CLEARANCE REQUIRED</div>
+        </div>
+        <h1 class="title">Laboratory Test Generator</h1>
+        <p class="subtitle">Select a test and review results for patient <span class="redacted">P-████</span>. You may download the report using the button at the bottom of the page.</p>
+        
+        <select id="testType">
+            <option value="cmp" title="A Comprehensive Metabolic Panel (CMP) blood test checks the levels of 14 substances to evaluate your body's chemical balance, metabolism, and organ function, primarily your liver and kidneys.">Comprehensive Metabolic Panel</option>
+            <option value="bmp" title="A basic metabolic panel (BMP) is a group of blood tests that measures your body's chemical balance, focusing on glucose, electrolyte levels (sodium, potassium, chloride, and carbon dioxide/bicarbonate), and kidney function markers (blood urea nitrogen and creatinine).">Basic Metabolic Panel</option>
+            <option value="esr" title="A Sedimentation Rate (Sed Rate), or Erythrocyte Sedimentation Rate (ESR) test, is a blood test that measures how quickly red blood cells settle in a tube over one hour.">Sed Rate (ESR)</option>
+            <option value="cbc" title="A CBC (Complete Blood Count) with Differential and Platelet count is a common blood test that measures the number of red blood cells, white blood cells, and platelets in your blood, and also counts the individual types of white blood cells.">CBC with Differential Platelet</option>
+            <option value="tsh" title="A TSH test, or Thyroid-Stimulating Hormone test, is a blood test that measures the amount of TSH in your blood to check the function of your thyroid gland.">TSH</option>
+        </select>
+        
+        <button id="generateBtn" class="generate-btn">Run Tests</button>
+        
+        <div id="loading" class="loading">
+            <div id="loadingMessage" class="loading-message">Wonder if SCP-049 would be interested in doing this?</div>
+        </div>
+        
+        <div id="report" class="report">
+            <div class="report-header">Lab Report - Patient <span class="redacted">P-████</span></div>
+            <div id="reportContent"></div>
+        </div>
+        
+        <p class="warning">Secure. Contain. Protect.</p>
+    </div>
+
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const testTypeSelect = document.getElementById('testType');
+        const loading = document.getElementById('loading');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const report = document.getElementById('report');
+        const reportContent = document.getElementById('reportContent');
+
+        const loadingMessages = [
+            "Doing sciency things...",
+            "Hmm... tastes like chicken.",
+            "What the hell is a glucometer?",
+            "I don't get paid enough for this.",
+            "I wish I was back at Site-19.",
+            "How is this person not dead yet?",
+            "Those are some weird looking cells...",
+            "SCP-173 is looking at me funny.",
+            "I should have been a botanist.",
+            "Wonder if SCP-049 would be interested in doing this?",
+            "Just another day in paradise.",
+            "I could really go for a coffee right now.",
+            "Is it Friday yet?",
+            "Is it just me, or does this blood smell funny?",
+        ];
+
+        const tests = {
+            cmp: {
+                parameters: {
+                    'Glucose': {min: 74, max: 106, unit: 'mg/dL', decimals: 0},
+                    'BUN': {min: 7, max: 18, unit: 'mg/dL', decimals: 0},
+                    'Creatinine Serum': {min: 0.52, max: 1.04, unit: 'mg/dL', decimals: 2},
+                    'Sodium': {min: 137, max: 145, unit: 'mmol/L', decimals: 0},
+                    'Potassium': {min: 3.5, max: 5.1, unit: 'mmol/L', decimals: 1},
+                    'Chloride': {min: 98, max: 107, unit: 'mmol/L', decimals: 0},
+                    'Carbon Dioxide (CO2)': {min: 22, max: 30, unit: 'mmol/L', decimals: 0},
+                    'Calcium': {min: 8.4, max: 10.2, unit: 'mg/dL', decimals: 1},
+                    'Bilirubin, Total': {min: 0.2, max: 1.3, unit: 'mg/dL', decimals: 1},
+                    'Total Protein': {min: 6.3, max: 8.2, unit: 'g/dL', decimals: 1},
+                    'Albumin': {min: 3.5, max: 5.0, unit: 'g/dL', decimals: 1},
+                    'Globulin': {min: 2.3, max: 3.5, unit: 'g/dL', decimals: 1},
+                    'Alkaline Phosphatase': {min: 38, max: 126, unit: 'U/L', decimals: 0},
+                    'AST': {min: 14, max: 44, unit: 'U/L', decimals: 0},
+                    'ALT': {min: 0, max: 35, unit: 'U/L', decimals: 0}
+                },
+                calculated: [
+                    {name: 'A/G Ratio', calc: (vals) => (vals['Albumin'] / vals['Globulin']).toFixed(1), min: 1.0, max: 2.1, unit: '', decimals: 1},
+                    {name: 'BUN/Crea Ratio', calc: (vals) => (vals['BUN'] / vals['Creatinine Serum']).toFixed(1), min: 10, max: 20, unit: '', decimals: 1},
+                    {name: 'Anion Gap', calc: (vals) => (vals['Sodium'] + vals['Potassium'] - vals['Chloride'] - vals['Carbon Dioxide (CO2)']).toFixed(0), min: 9, max: 20, unit: 'mmol/L', decimals: 0},
+                    {name: 'Estimated GFR', calc: () => Math.random() < 0.5 ? '>60' : (60 + Math.random() * 60).toFixed(0), min: 60, max: 120, unit: 'mL/min/1.73 m²', decimals: 0, special: true}
+                ]
+            },
+            bmp: {
+                parameters: {
+                    'Glucose': {min: 74, max: 106, unit: 'mg/dL', decimals: 0},
+                    'BUN': {min: 7, max: 18, unit: 'mg/dL', decimals: 0},
+                    'Creatinine Serum': {min: 0.52, max: 1.04, unit: 'mg/dL', decimals: 2},
+                    'Sodium': {min: 137, max: 145, unit: 'mmol/L', decimals: 0},
+                    'Potassium': {min: 3.5, max: 5.1, unit: 'mmol/L', decimals: 1},
+                    'Chloride': {min: 98, max: 107, unit: 'mmol/L', decimals: 0},
+                    'Carbon Dioxide (CO2)': {min: 22, max: 30, unit: 'mmol/L', decimals: 0},
+                    'Calcium': {min: 8.4, max: 10.2, unit: 'mg/dL', decimals: 1}
+                },
+                calculated: []
+            },
+            esr: {
+                parameters: {
+                    'Sed Rate (ESR)': {min: 0, max: 20, unit: 'mm/hr', decimals: 0}
+                },
+                calculated: []
+            },
+            cbc: {
+                parameters: {
+                    'White Blood Cell Count (WBC)': {min: 4.5, max: 11.0, unit: 'x10⁹/L', decimals: 1},
+                    'Red Blood Cell Count (RBC)': {min: 4.5, max: 6.0, unit: 'x10¹²/L', decimals: 1},
+                    'Hemoglobin (Hb)': {min: 13, max: 18, unit: 'g/dL', decimals: 0},
+                    'Hematocrit (Hct)': {min: 40, max: 54, unit: '%', decimals: 0},
+                    'Platelet Count': {min: 150, max: 400, unit: 'x10⁹/L', decimals: 0},
+                    'Neutrophils': {min: 40, max: 75, unit: '%', decimals: 0},
+                    'Lymphocytes': {min: 20, max: 40, unit: '%', decimals: 0},
+                    'Monocytes': {min: 2, max: 8, unit: '%', decimals: 0},
+                    'Eosinophils': {min: 1, max: 4, unit: '%', decimals: 0},
+                    'Basophils': {min: 0.5, max: 1, unit: '%', decimals: 1}
+                },
+                calculated: []
+            },
+            tsh: {
+                parameters: {
+                    'TSH': {min: 0.4, max: 4.0, unit: 'mIU/L', decimals: 1}
+                },
+                calculated: []
+            }
+        };
+
+        function getRandomValue(min, max, decimals = 0) {
+            const value = Math.random() * (max - min) + min;
+            return parseFloat(value.toFixed(decimals));
+        }
+
+        function generateValue(param) {
+            const { min, max, decimals = 0 } = param;
+            let value, status = 'normal', statusClass = 'normal', direction = Math.random() < 0.5 ? 'low' : 'high';
+            const rand = Math.random();
+
+            if (rand < 0.005) { // add critical chance (oh shit)
+                status = 'critical';
+                statusClass = 'critical';
+                const delta = (max - min) * 0.5;
+                value = direction === 'low' ? getRandomValue(min - delta - 0.1, min - delta, decimals) : getRandomValue(max + delta, max + delta + 0.1, decimals);
+            } else if (rand < 0.025) { // add abnormal chance (meh, should be fine)
+                status = 'abnormal';
+                statusClass = 'abnormal';
+                const delta = (max - min) * 0.1;
+                value = direction === 'low' ? getRandomValue(min - delta, min - 0.01, decimals) : getRandomValue(max + 0.01, max + delta, decimals);
+            } else {
+                value = getRandomValue(min, max, decimals);
+            }
+
+            return { value, status, statusClass, direction };
+        }
+
+        function generateReport() {
+            const testType = testTypeSelect.value;
+            const test = tests[testType];
+            if (!test) return;
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Analyzing...';
+            loading.style.display = 'block';
+            report.style.display = 'none';
+            reportContent.innerHTML = '';
+
+            let messageIndex = 0;
+            const messageInterval = setInterval(() => {
+                loadingMessage.textContent = loadingMessages[messageIndex % loadingMessages.length];
+                messageIndex++;
+            }, 500);
+
+            setTimeout(() => {
+                clearInterval(messageInterval);
+                loading.style.display = 'none';
+                generateReportData(testType, test);
+                report.style.display = 'block';
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Run Analysis';
+            }, 4000);
+        }
+
+        function generateReportData(testType, test) {
+            const values = {};
+            Object.keys(test.parameters).forEach(paramName => {
+                const param = test.parameters[paramName];
+                const { value } = generateValue(param);
+                values[paramName] = value;
+            });
+
+            test.calculated.forEach(calc => {
+                let value = calc.calc(values);
+                if (calc.special && parseFloat(value) > 60) {
+                    value = '>60';
+                }
+                values[calc.name] = parseFloat(value) || value;
+            });
+
+            const allParams = { ...test.parameters };
+            test.calculated.forEach(calc => {
+                allParams[calc.name] = { min: calc.min, max: calc.max, unit: calc.unit, decimals: calc.decimals, calculated: true };
+            });
+
+            Object.keys(allParams).forEach(paramName => {
+                const param = allParams[paramName];
+                let value = values[paramName];
+                let status = 'normal', statusClass = 'normal', flag = '';
+
+                if (typeof value === 'string') {
+                    status = 'normal';
+                } else {
+                    const rand = Math.random();
+                    let direction = Math.random() < 0.5 ? 'low' : 'high';
+                    if (rand < 0.005) {
+                        status = 'critical';
+                        statusClass = 'critical';
+                        const delta = (param.max - param.min) * 0.5;
+                        value = direction === 'low' ? getRandomValue(param.min - delta - 0.1, param.min - delta, param.decimals) : getRandomValue(param.max + delta, max + delta + 0.1, param.decimals);
+                    } else if (rand < 0.025) {
+                        status = 'abnormal';
+                        statusClass = 'abnormal';
+                        const delta = (param.max - param.min) * 0.1;
+                        value = direction === 'low' ? getRandomValue(param.min - delta, param.min - 0.01, param.decimals) : getRandomValue(param.max + 0.01, param.max + delta, param.decimals);
+                    }
+                    values[paramName] = value;
+
+                    if (value < param.min) {
+                        flag = 'Low';
+                        direction = 'low';
+                    } else if (value > param.max) {
+                        flag = 'High';
+                        direction = 'high';
+                    } else {
+                        flag = '';
+                    }
+                }
+
+                const min = param.min;
+                const max = param.max;
+                const unit = param.unit;
+                let pos = ((value - min) / (max - min)) * 100;
+                if (pos < 0) pos = 0;
+                if (pos > 100) pos = 100;
+
+                const html = `
+                    <div class="param-box ${statusClass}">
+                        <p class="param-name">${paramName}</p>
+                        <p class="param-range">Normal range: ${min} - ${max} ${unit}</p>
+                        <div class="value-container">
+                            <span class="value">${value}</span><span class="flag">${flag}</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="arrow" style="left: ${pos}%;">▼</div>
+                        </div>
+                        <div class="bar-labels">
+                            <span>${min}</span>
+                            <span>${max}</span>
+                        </div>
+                    </div>
+                `;
+                reportContent.innerHTML += html;
+            });
+        }
+
+        generateBtn.addEventListener('click', generateReport);
+    </script>
+</body>
+</html>
