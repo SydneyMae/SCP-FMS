@@ -176,6 +176,25 @@
             color: #b3b3b3;
             transition: background-color 0.3s ease;
         }
+        .learn-btn {
+            background-color: #4b5563;
+            color: #ffffff;
+            border: 1px solid #6b7280;
+            padding: 0.5rem 1rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-radius: 4px;
+            margin-top: 1rem;
+            display: none;
+            margin-left: auto;
+            margin-right: auto;
+            width: fit-content;
+        }
+        .learn-btn:hover {
+            background-color: #6b7280;
+        }
         .warning {
             font-size: 0.9rem;
             color: #ff4d4d;
@@ -234,6 +253,7 @@
         <div id="report" class="report">
             <div class="report-header">Lab Report - Patient <span class="redacted">P-████</span></div>
             <div id="reportContent"></div>
+            <button id="learnBtn" class="learn-btn">Learn How to Read This</button>
         </div>
         
         <p class="warning">Secure. Contain. Protect.</p>
@@ -246,6 +266,7 @@
         const loadingMessage = document.getElementById('loadingMessage');
         const report = document.getElementById('report');
         const reportContent = document.getElementById('reportContent');
+        const learnBtn = document.getElementById('learnBtn');
 
         const loadingMessages = [
             "Doing sciency things...",
@@ -369,6 +390,7 @@
             loading.style.display = 'block';
             report.style.display = 'none';
             reportContent.innerHTML = '';
+            learnBtn.style.display = 'none';
 
             let messageIndex = 0;
             const messageInterval = setInterval(() => {
@@ -382,7 +404,8 @@
                 generateReportData(testType, test);
                 report.style.display = 'block';
                 generateBtn.disabled = false;
-                generateBtn.textContent = 'Run Analysis';
+                generateBtn.textContent = 'Run Tests';
+                learnBtn.style.display = 'block';
             }, 4000);
         }
 
@@ -421,7 +444,7 @@
                         status = 'critical';
                         statusClass = 'critical';
                         const delta = (param.max - param.min) * 0.5;
-                        value = direction === 'low' ? getRandomValue(param.min - delta - 0.1, param.min - delta, param.decimals) : getRandomValue(param.max + delta, max + delta + 0.1, param.decimals);
+                        value = direction === 'low' ? getRandomValue(param.min - delta - 0.1, param.min - delta, param.decimals) : getRandomValue(param.max + delta, param.max + delta + 0.1, param.decimals);
                     } else if (rand < 0.025) {
                         status = 'abnormal';
                         statusClass = 'abnormal';
@@ -468,7 +491,19 @@
             });
         }
 
+        function showLearnGuide(testType) {
+            const guides = {
+                cmp: "https://my.clevelandclinic.org/health/diagnostics/22058-comprehensive-metabolic-panel-cmp",
+                bmp: "https://my.clevelandclinic.org/health/diagnostics/22020-basic-metabolic-panel-bmp",
+                esr: "https://my.clevelandclinic.org/health/diagnostics/17747-sed-rate-erythrocyte-sedimentation-rate-or-esr-test",
+                cbc: "https://my.clevelandclinic.org/health/diagnostics/4053-complete-blood-count",
+                tsh: "https://my.clevelandclinic.org/health/articles/23524-thyroid-stimulating-hormone-tsh-levels"
+            };
+            window.open(guides[testType] || "https://example.com/default-guide", '_blank');
+        }
+
         generateBtn.addEventListener('click', generateReport);
+        learnBtn.addEventListener('click', () => showLearnGuide(testTypeSelect.value));
     </script>
 </body>
 </html>
